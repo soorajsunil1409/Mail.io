@@ -57,8 +57,14 @@ export default {
         contrast: {
           DEFAULT: "rgb(var(--contrast))",
         },
+        "contrast-secondary": {
+          DEFAULT: "rgb(var(--contrast-secondary))",
+        },
         "anti-contrast": {
           DEFAULT: "rgb(var(--anti-contrast))",
+        },
+        "purple-text": {
+          DEFAULT: "rgb(var(--purple-text))",
         }
       },
       borderRadius: {

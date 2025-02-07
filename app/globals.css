@@ -34,7 +34,9 @@ body {
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
         --contrast: 0 0 0;
+        --contrast-secondary: 55 65 81;
         --anti-contrast: 255 255 255;
+        --purple-text: 147 51 234;
     }
     .dark {
         --background: 222.2 84% 4.9%;
@@ -62,7 +64,9 @@ body {
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
         --contrast: 255 255 255;
+        --contrast-secondary: 209 213 219;
         --anti-contrast: 0 0 0;
+        --purple-text: 216 180 254;
     }
 }
 
