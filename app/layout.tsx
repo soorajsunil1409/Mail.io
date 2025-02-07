@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
+import { SessionProvider } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authConfig } from "@/lib/auth";
+import Providers from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +23,7 @@ export const metadata: Metadata = {
   icons: "/logo.svg"
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,18 +33,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-          <Navbar />
-
-          <main className="">
-            {children}
-          </main>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
