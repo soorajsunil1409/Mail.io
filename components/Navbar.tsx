@@ -3,9 +3,22 @@
 import { useTheme } from "next-themes"
 import Image from "next/image";
 import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
     const {setTheme} = useTheme();
+      
+    const [name, setName] = useState("");
+    const { data: session } = useSession();
+    const handleSignIn = async () => {
+    signIn("google");
+    };
+    useEffect(() => {
+    if (session?.user?.name) {
+        setName(session.user.name);
+    }
+    }, [session]);
 
     const navs = [
         {title: "Pricing", link: "/pricing"},
@@ -33,7 +46,7 @@ const Navbar = () => {
             </div>
             <div>
                 {/* <button className="bg-secondary px-4 py-2 rounded-3xl" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>Switch</button> */}
-                <button className="bg-contrast text-anti-contrast px-4 py-2 rounded-xl font-semibold" onClick={() => setTheme((prev) => prev == "light" ? "dark" : "light")}>SIGN IN</button>
+                <button className="bg-contrast text-anti-contrast px-4 py-2 rounded-xl font-semibold" onClick={handleSignIn}>SIGN IN</button>
             </div>
         </div>
     )

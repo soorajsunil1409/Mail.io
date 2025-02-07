@@ -33,7 +33,12 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+
+          <Navbar />  
+          {children}
+          
+        </Providers>
       </body>
     </html>
   );
