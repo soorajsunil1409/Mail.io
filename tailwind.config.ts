@@ -54,6 +54,12 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        contrast: {
+          DEFAULT: "rgb(var(--contrast))",
+        },
+        "anti-contrast": {
+          DEFAULT: "rgb(var(--anti-contrast))",
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
