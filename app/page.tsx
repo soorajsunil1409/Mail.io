@@ -1,6 +1,8 @@
 "use client"
 
 import Image from "next/image";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 const page = () => {
 
@@ -15,9 +17,25 @@ const page = () => {
     {title: "Test2", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg"},
     {title: "Test3", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg"},
   ]
+  
+  const [name, setName] = useState("");
+  const { data: session } = useSession();
+  const handleSignIn = async () => {
+    signIn("google");
+  };
+  useEffect(() => {
+    if (session?.user?.name) {
+      setName(session.user.name);
+    }
+  }, [session]);
 
   return (
     <div className="px-8 w-[100vw] h-fit flex flex-col gap-10 items-center pb-10">
+      
+      <div>
+        <p>{name}</p>
+        <button onClick={handleSignIn}>Sign In</button>
+      </div>
       <div className="w-full h-[87vh] rounded-3xl overflow-hidden relative">
         <Image src="/gradient.png" className="inset-0 absolute -z-10 w-full h-full blur-2xl" alt="Sdf" width={100} height={100}/>
         <Image src="/logo.svg" className="inset-0 absolute -z-9 w-full h-full blur-xl opacity-60" alt="Sdf" width={100} height={100}/>
@@ -67,7 +85,6 @@ const page = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+     );
 };
-export default page;
+export default Home;
