@@ -5,15 +5,16 @@ import { Mail, MailOpen, Star, Trash, Send, Archive } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const Dashboard = () => {
-  const { theme } = useTheme();
-  const emailStats = [
-    { title: "Total Emails", count: 1250, icon: Mail },
-    { title: "Unread Mails", count: 18, icon: MailOpen },
-    { title: "Starred", count: 42, icon: Star },
-    { title: "Trash", count: 8, icon: Trash },
-    { title: "Sent", count: 386, icon: Send },
-    { title: "Archived", count: 129, icon: Archive },
-  ];
+    const {theme} = useTheme();
+
+    const emailStats = [
+        { title: "Total Emails", count: 1250, icon: Mail },
+        { title: "Unread Mails", count: 18, icon: MailOpen },
+        { title: "Starred", count: 42, icon: Star },
+        { title: "Trash", count: 8, icon: Trash },
+        { title: "Sent", count: 386, icon: Send },
+        { title: "Archived", count: 129, icon: Archive },
+    ];
 
   return (
     <div className="px-8 w-full min-h-screen flex flex-col gap-10 items-center pb-10 bg-gradient-to-br bg-background text-contrast">
