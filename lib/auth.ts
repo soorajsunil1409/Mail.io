@@ -1,7 +1,7 @@
 import { IUser, User } from "@/models/User";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { connect_DB } from "../utils/DB";
+import { connect_DB } from "@/utils/DB";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { defaultCategories } from "@/lib/constants";
