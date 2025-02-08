@@ -22,12 +22,17 @@ export const authConfig: NextAuthOptions = {
           scope:
             "openid email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events",
           access_type: "offline",
-          prompt: "consent",
         },
       },
     }),
   ],
   callbacks: {
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub as string; // Assign `sub` as `id`
+      }
+      return session;
+    },
     async signIn({ account, user }) {
       if (!account) return false;
       await connect_DB();
