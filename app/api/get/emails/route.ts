@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(baseUrl);
   if (next_page_token) {
     url.searchParams.append("pageToken", next_page_token);
-    url.searchParams.append("maxResults", "15");
   }
+  url.searchParams.append("maxResults", "15");
   oauth2Client.setCredentials({
     access_token: user.access_token,
   });
