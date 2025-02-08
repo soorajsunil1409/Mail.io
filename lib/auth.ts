@@ -22,6 +22,7 @@ export const authConfig: NextAuthOptions = {
           scope:
             "openid email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.events",
           access_type: "offline",
+          prompt: "consent",
         },
       },
     }),
@@ -45,8 +46,6 @@ export const authConfig: NextAuthOptions = {
           access_token: account.access_token,
           refresh_token: account.refresh_token,
           expires_at: account.expires_at,
-          categories: defaultCategories,
-          messages: [{ id: 1, category: "test" }],
         },
         { upsert: true, new: true }
       );

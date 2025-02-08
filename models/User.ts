@@ -1,3 +1,4 @@
+import { defaultCategories } from "@/lib/constants";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
@@ -57,7 +58,7 @@ const UserSchema = new Schema<IUser>({
       },
     ],
     required: true,
-    default: [{ name: "General", description: "All the Emails" }],
+    default: defaultCategories,
   },
   messages: {
     type: [
@@ -66,7 +67,7 @@ const UserSchema = new Schema<IUser>({
         category: String,
       },
     ],
-    default: [],
+    default: [{ id: "1", category: "Test" }],
   },
 });
 
