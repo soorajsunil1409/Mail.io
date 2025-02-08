@@ -8,6 +8,10 @@ export interface IUser extends Document {
   access_token: string;
   expires_at: number;
   refresh_token: string;
+  categories: {
+    name: string;
+    description: string;
+  }[];
 }
 
 const UserSchema = new Schema<IUser>({
@@ -40,6 +44,16 @@ const UserSchema = new Schema<IUser>({
   refresh_token: {
     type: String,
     required: true,
+  },
+  categories: {
+    type: [
+      {
+        name: String,
+        description: String,
+      },
+    ],
+    required: true,
+    default: [{ name: "General", description: "All the Emails" }],
   },
 });
 
