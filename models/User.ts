@@ -12,6 +12,10 @@ export interface IUser extends Document {
     name: string;
     description: string;
   }[];
+  messages: {
+    id: string;
+    category: string;
+  }[];
 }
 
 const UserSchema = new Schema<IUser>({
@@ -54,6 +58,15 @@ const UserSchema = new Schema<IUser>({
     ],
     required: true,
     default: [{ name: "General", description: "All the Emails" }],
+  },
+  messages: {
+    type: [
+      {
+        id: String,
+        category: String,
+      },
+    ],
+    default: [],
   },
 });
 

@@ -1,9 +1,8 @@
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
-import { connect_DB } from "@/lib/DB";
+import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
-import { simpleParser } from "mailparser";
 import { askGemini, getPrompt } from "@/utils/gemini";
 import { extractDesiredHeaders, processPayload } from "@/utils/mail-parser";
 
@@ -27,8 +26,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(baseUrl);
   if (next_page_token) {
     url.searchParams.append("pageToken", next_page_token);
-    url.searchParams.append("maxResults", "15");
   }
+  url.searchParams.append("maxResults", "15");
   oauth2Client.setCredentials({
     access_token: user.access_token,
   });
@@ -42,16 +41,26 @@ export async function GET(request: NextRequest) {
   const classifiedEmails = [];
   for (const message of data.messages) {
     const parsedEmail = await getParsedEmail(message.id);
-    const prompt = getPrompt(JSON.stringify(parsedEmail), user.categories);
-    const response = await askGemini(prompt);
+    const foundMessage = user.messages.find((msg) => msg.id === message.id);
+    let category = foundMessage?.category;
+    if (!foundMessage) {
+      const prompt = getPrompt(JSON.stringify(parsedEmail), user.categories);
+      const response = await askGemini(prompt);
+      user.messages.push({
+        id: message.id,
+        category: response,
+      });
+      category = response;
+      await delay(4000);
+    }
     classifiedEmails.push({
       ...parsedEmail,
-      category: response,
+      category,
       message_id: message.id,
     });
     console.log(classifiedEmails.length);
-    await delay(4000);
   }
+  await user.save();
   return Response.json({
     success: true,
     next_page_token: data.nextPageToken,

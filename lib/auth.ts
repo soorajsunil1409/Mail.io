@@ -1,7 +1,7 @@
 import { IUser, User } from "@/models/User";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { connect_DB } from "./DB";
+import { connect_DB } from "../utils/DB";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { defaultCategories } from "@/lib/constants";
@@ -28,6 +28,12 @@ export const authConfig: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub as string; // Assign `sub` as `id`
+      }
+      return session;
+    },
     async signIn({ account, user }) {
       if (!account) return false;
       await connect_DB();
@@ -41,6 +47,7 @@ export const authConfig: NextAuthOptions = {
           refresh_token: account.refresh_token,
           expires_at: account.expires_at,
           categories: defaultCategories,
+          messages: [{ id: 1, category: "test" }],
         },
         { upsert: true, new: true }
       );
