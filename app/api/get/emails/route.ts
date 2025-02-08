@@ -1,5 +1,5 @@
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
-import { connect_DB } from "@/lib/DB";
+import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";

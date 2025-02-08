@@ -20,3 +20,24 @@ export const defaultCategories = [
       "Miscellaneous emails that do not fit into the other categories.",
   },
 ];
+
+export const features = [
+  {
+    title: "Something 1",
+    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+  },
+  {
+    title: "Something 2",
+    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+  },
+  {
+    title: "Something 3",
+    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+  },
+];
+
+export const cards = [
+  { title: "Test1", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
+  { title: "Test2", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
+  { title: "Test3", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
+];
