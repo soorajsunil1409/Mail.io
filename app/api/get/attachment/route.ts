@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
-import { oauth2Client } from "@/lib/auth";
+import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 
@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
         }
       );
     }
+    await refresh_access_token(user);
     oauth2Client.setCredentials({
       access_token: user.access_token,
     });
