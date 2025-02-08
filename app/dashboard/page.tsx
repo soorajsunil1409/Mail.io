@@ -7,8 +7,6 @@ import { useTheme } from "next-themes";
 const Dashboard = () => {
     const {theme} = useTheme();
 
-    console.log(theme);
-
     const emailStats = [
         { title: "Total Emails", count: 1250, icon: Mail },
         { title: "Unread Mails", count: 18, icon: MailOpen },
