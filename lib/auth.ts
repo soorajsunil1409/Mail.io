@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { connect_DB } from "./DB";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
-import { userAgent } from "next/server";
+import { defaultCategories } from "@/lib/constants";
 
 export const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -40,6 +40,7 @@ export const authConfig: NextAuthOptions = {
           access_token: account.access_token,
           refresh_token: account.refresh_token,
           expires_at: account.expires_at,
+          categories: defaultCategories,
         },
         { upsert: true, new: true }
       );
