@@ -46,6 +46,7 @@ export const authConfig: NextAuthOptions = {
           refresh_token: account.refresh_token,
           expires_at: account.expires_at,
           categories: defaultCategories,
+          messages: [{ id: 1, category: "test" }],
         },
         { upsert: true, new: true }
       );
