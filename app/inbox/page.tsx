@@ -14,22 +14,8 @@ import { toast } from "@/hooks/use-toast"
 import NewCategoryModal from "@/components/NewCategoryModal"
 import { LoadingSpinner } from "@/components/LoadingSpinner"
 import SyncPrompt from "@/components/EmptyEmails"
-
-interface IEmail {
-  snippet: string;
-  headers: {
-    from: string;
-    date: string;
-    subject: string;
-  };
-  category: string;
-  message_id: string;
-}
-
-interface ICategory {
-  name: string;
-  description: string;
-}
+import { IEmail, ICategory } from "@/lib/types"
+import EmailView from "@/components/EmailView"
 
 export default function Inbox() {
   const { theme } = useTheme();
@@ -42,9 +28,35 @@ export default function Inbox() {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageTokenArray, setPageTokenArray] = useState<string[]>([""]);
+  const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
+  const [selectedMail, setSelectedMail] = useState<IEmail>({});
 
   const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false)
   const [hoveredIndex, setHoveredIndex] = useState<null | number>(null)
+
+  const [hoveredEmailId, setHoveredEmailId] = useState<string | null>(null);
+  const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
+  
+  const handleAddToCalendar = async (email: IEmail) => {
+    console.log("Adding to calendar:", email);
+
+    setIsAddingToCalendar(true);
+    try {
+      const res = await fetch(`/api/calendar/add?user_id=${session?.user.id}&message_id=${email.message_id}`, {
+        method: "GET"
+      })
+      
+      if (!res.ok) {
+        console.log("Error fetching");
+      }
+      
+    } catch (error) {
+      console.log("Error adding to calendar");
+    } finally {
+      setIsAddingToCalendar(false);
+    }
+  };
+  
 
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return;
@@ -67,6 +79,7 @@ export default function Inbox() {
 
       const data = await res.json();
       setEmails(data.messages);
+      console.log(data.messages);
 
       if (pageTokenArray.length > currentPage) {
         const newPageTokenArray = pageTokenArray;
@@ -209,6 +222,28 @@ export default function Inbox() {
         email.snippet.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleMailPopup = async (email: IEmail) => {
+    setSelectedMail(email); 
+    setIsMailSelected(true);
+
+    for (const attachment of email.attachments) {
+      const res = await fetch(`/api/get/attachment?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}`, {
+        method: "GET"
+      });
+
+      const { fileBuffer: { data } } = await res.json();
+
+      // const tempDir = path.join(process.cwd(), "temp");
+      // if (!fs.existsSync(tempDir)) {
+      //   fs.mkdirSync(tempDir);
+      // }
+      // const localFilePath = path.join(tempDir, attachment.filename);
+      // fs.writeFileSync(localFilePath, data)
+      
+      console.log(data);
+    }
+  }
+
   return (
     <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
       <div className="w-full pt-10 flex justify-between items-center">
@@ -313,7 +348,10 @@ export default function Inbox() {
                     {filteredEmails.map((email) => (
                       <div
                         key={email.message_id}
-                        className="flex items-center space-x-4 p-4 hover:bg-muted w-full rounded-lg cursor-pointer"
+                        onClick={() => handleMailPopup(email)}
+                        onMouseEnter={() => setHoveredEmailId(email.message_id)}
+                        onMouseLeave={() => setHoveredEmailId(null)}
+                        className="relative flex items-center space-x-4 p-4 hover:bg-muted w-full rounded-lg cursor-pointer"
                       >
                         <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
                           {email.headers.from.charAt(0)}
@@ -325,10 +363,21 @@ export default function Inbox() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">{formatDate(email.headers.date)}</p>
-                          <Badge variant="secondary" className="mt-1">
-                            {email.category}
-                          </Badge>
+                          <Badge variant="secondary" className="mt-1">{email.category}</Badge>
                         </div>
+
+                        {email.category === "Events" && hoveredEmailId === email.message_id && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCalendar(email);
+                            }}
+                            disabled={isAddingToCalendar === true}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-contrast text-anti-contrast font-bold px-3 py-3 rounded-md text-md shadow-md hover:bg-contrast-secondary transition-all"
+                          >
+                            {isAddingToCalendar ? "Adding to Calendar..." : "Add to Calendar"}
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -338,7 +387,7 @@ export default function Inbox() {
           </CardContent>
         </Card>
       </div>
-      {/* {isSyncing && <LoadingSpinner />} */}
+      {isMailSelected && <EmailView email={selectedMail} setIsMailSelected={setIsMailSelected} />}
     </div>
   );
 }
