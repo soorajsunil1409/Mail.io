@@ -47,10 +47,5 @@ export async function GET(request: NextRequest) {
     return Response.json({
       attachmentRes,
     });
-  } catch (error) {
-    console.log("Error while Fetching User Categories");
-    return Response.json({
-      error,
-    });
   }
 }
