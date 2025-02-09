@@ -1,3 +1,6 @@
+//Onlt supports the Emails Which are Classified as Events or Have some Event data in the Email
+//Future work: If the email does not contain the event data such as start time , end time , User will send.
+
 import fs from "fs";
 import path from "path";
 import { google } from "googleapis";
@@ -70,23 +73,7 @@ export async function GET(request: NextRequest) {
           { method: "popup", minutes: 20 },
         ],
       };
-      const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-      const eventInsertPromise = new Promise((resolve, reject) => {
-        calendar.events.insert(
-          {
-            calendarId: "primary",
-            resource: result,
-          },
-          (err, event) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(event);
-            }
-          }
-        );
-      });
-      await eventInsertPromise;
+      await markCalendar(result);
     }
 
     user.messages = user.messages.filter((msg) => msg.id != message_id);
@@ -144,6 +131,16 @@ export async function markEventInCalendarWithAttachment(
     ],
   };
 
+  await markCalendar(result);
+  if (localFilePath) {
+    await fs.promises.unlink(localFilePath);
+    console.log(`Deleted file at ${localFilePath}`);
+  }
+  console.log("Event with Attachment Added to Calendar");
+  return true;
+}
+
+export async function markCalendar(result) {
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
   const eventInsertPromise = new Promise((resolve, reject) => {
     calendar.events.insert(
@@ -161,10 +158,4 @@ export async function markEventInCalendarWithAttachment(
     );
   });
   await eventInsertPromise;
-  if (localFilePath) {
-    await fs.promises.unlink(localFilePath);
-    console.log(`Deleted file at ${localFilePath}`);
-  }
-  console.log("Event with Attachment Added to Calendar");
-  return true;
 }
