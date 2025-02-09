@@ -1,100 +1,111 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { Search, RefreshCw, Trash2, CircleArrowLeft, CircleArrowRight } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatDate } from "@/utils/formatDate"
-import { toast } from "@/hooks/use-toast"
-import NewCategoryModal from "@/components/NewCategoryModal"
-import { LoadingSpinner } from "@/components/LoadingSpinner"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import {
+  Search,
+  RefreshCw,
+  Trash2,
+  CircleArrowLeft,
+  CircleArrowRight,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatDate } from "@/utils/formatDate";
+import { toast } from "@/hooks/use-toast";
+import NewCategoryModal from "@/components/NewCategoryModal";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface IEmail {
-  snippet: string
+  snippet: string;
   headers: {
-    from: string
-    date: string
-    subject: string
-  }
-  category: string
-  message_id: string
+    from: string;
+    date: string;
+    subject: string;
+  };
+  category: string;
+  message_id: string;
 }
 
 interface ICategory {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 export default function Inbox() {
-  const { theme } = useTheme()
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isSyncing, setIsSyncing] = useState(false)
-  const { data: session, status } = useSession()
+  const { theme } = useTheme();
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { data: session, status } = useSession();
 
-  const [emails, setEmails] = useState<IEmail[]>([])
-  const [categories, setCategories] = useState<ICategory[]>([])
-  const [currentPage, setCurrentPage] = useState<number>(0)
-  const [pageTokenArray, setPageTokenArray] = useState<string[]>([""])
+  const [emails, setEmails] = useState<IEmail[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageTokenArray, setPageTokenArray] = useState<string[]>([""]);
 
-  const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false)
-  const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [isNewCategoryModalOpen, setIsCategoryModalOpen] =
+    useState<boolean>(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const getEmails = async () => {
-    if (status !== "authenticated" || !session?.user?.id) return
+    if (status !== "authenticated" || !session?.user?.id) return;
 
-    console.log(currentPage)
+    console.log(currentPage);
 
-    setIsSyncing(true)
+    setIsSyncing(true);
     try {
-      let url = "/api/get/emails"
-      url = url + `?user_id=${session.user.id}`
-      url = url + `&page_token=${pageTokenArray[currentPage]}`
+      let url = "/api/get/emails";
+      url = url + `?user_id=${session.user.id}`;
+      url = url + `&page_token=${pageTokenArray[currentPage]}`;
 
       const res = await fetch(url, {
         method: "GET",
-      })
+      });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch emails")
+        throw new Error("Failed to fetch emails");
       }
 
-      const data = await res.json()
-      setEmails(data.messages)
+      const data = await res.json();
+      setEmails(data.messages);
 
       if (pageTokenArray.length > currentPage) {
-        const newPageTokenArray = pageTokenArray
-        newPageTokenArray[currentPage + 1] = data.next_page_token
-        setPageTokenArray(newPageTokenArray)
+        const newPageTokenArray = pageTokenArray;
+        newPageTokenArray[currentPage + 1] = data.next_page_token;
+        setPageTokenArray(newPageTokenArray);
       } else {
-        setPageTokenArray([...pageTokenArray, data.next_page_token])
+        setPageTokenArray([...pageTokenArray, data.next_page_token]);
       }
 
       toast({
         title: "Emails synced successfully",
         description: `${data.messages.length} emails retrieved.`,
-      })
+      });
     } catch (error) {
-      console.error("Error fetching emails:", error)
+      console.error("Error fetching emails:", error);
       toast({
         title: "Sync failed",
-        description: "There was an error syncing your emails. Please try again.",
+        description:
+          "There was an error syncing your emails. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSyncing(false)
+      setIsSyncing(false);
     }
-  }
+  };
 
-  const handleAddCategory = async (newCategory: { name: string; description: string }) => {
-    if (status !== "authenticated" || !session?.user?.id) return
+  const handleAddCategory = async (newCategory: {
+    name: string;
+    description: string;
+  }) => {
+    if (status !== "authenticated" || !session?.user?.id) return;
 
-    console.log(newCategory)
+    console.log(newCategory);
 
     try {
       const res = await fetch(`/api/category/update`, {
@@ -106,27 +117,31 @@ export default function Inbox() {
           user_id: session?.user?.id,
           categories: [...categories, newCategory],
         }),
-      })
+      });
 
       if (!res.ok) {
-        console.log("Update Categories Failed")
+        console.log("Update Categories Failed");
       }
 
-      setCategories([...categories, newCategory])
-      setIsCategoryModalOpen(false)
+      setCategories([...categories, newCategory]);
+      setIsCategoryModalOpen(false);
     } catch (error) {
-      console.log("Error updating Categories")
+      console.log("Error updating Categories");
     }
-  }
+  };
 
   const handleRemoveCategory = async (name: string) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete "${name}"?`)
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete "${name}"?`
+    );
 
-    if (!isConfirmed) return
+    if (!isConfirmed) return;
 
-    const newCategories = categories.filter((category) => category.name !== name)
+    const newCategories = categories.filter(
+      (category) => category.name !== name
+    );
 
-    console.log(newCategories)
+    console.log(newCategories);
 
     try {
       const res = await fetch(`/api/category/update`, {
@@ -138,64 +153,67 @@ export default function Inbox() {
           user_id: session?.user?.id,
           categories: newCategories,
         }),
-      })
+      });
 
       if (!res.ok) {
-        console.log("Delete Categories Failed")
+        console.log("Delete Categories Failed");
       }
 
-      setCategories(newCategories)
+      setCategories(newCategories);
     } catch (error) {
-      console.log("Error deleting Categories")
+      console.log("Error deleting Categories");
     }
-  }
+  };
 
   const handlePrevPage = async () => {
-    setCurrentPage((prev) => prev - 1)
-  }
+    setCurrentPage((prev) => prev - 1);
+  };
 
   const handleNextPage = async () => {
-    setCurrentPage((prev) => prev + 1)
-  }
+    setCurrentPage((prev) => prev + 1);
+  };
 
   useEffect(() => {
-    getEmails()
-  }, [currentPage])
+    getEmails();
+  }, [currentPage]);
 
   useEffect(() => {
     const getCategories = async () => {
-      if (status !== "authenticated" || !session?.user?.id) return
+      if (status !== "authenticated" || !session?.user?.id) return;
 
       try {
-        const res = await fetch(`/api/category/get?user_id=${session?.user?.id}`, {
-          method: "GET",
-        })
+        const res = await fetch(
+          `/api/category/get?user_id=${session?.user?.id}`,
+          {
+            method: "GET",
+          }
+        );
 
         if (!res.ok) {
-          throw new Error("Failed to fetch categories")
+          throw new Error("Failed to fetch categories");
         }
 
-        const data = await res.json()
+        const data = await res.json();
 
         if (data) {
-          setCategories([...data.categories])
-          console.log(data.categories)
+          setCategories([...data.categories]);
+          console.log(data.categories);
         }
       } catch (error) {
-        console.log("Error getting categories")
+        console.log("Error getting categories");
       }
-    }
+    };
 
-    getCategories()
-  }, [session, status])
+    getCategories();
+  }, [session, status]);
 
   const filteredEmails = emails.filter(
     (email) =>
       (selectedCategory === "All" || email.category === selectedCategory) &&
       (email.headers.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
         email.headers.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        email.snippet.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+        email.snippet.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
@@ -252,7 +270,9 @@ export default function Inbox() {
                 Add Category
               </Button>
 
-              {isNewCategoryModalOpen && <NewCategoryModal handleAddCategory={handleAddCategory} />}
+              {isNewCategoryModalOpen && (
+                <NewCategoryModal handleAddCategory={handleAddCategory} />
+              )}
             </ScrollArea>
           </CardContent>
         </Card>
@@ -270,7 +290,9 @@ export default function Inbox() {
               <div className="flex">
                 <button
                   onClick={handlePrevPage}
-                  disabled={currentPage === 0 || emails.length === 0 || isSyncing}
+                  disabled={
+                    currentPage === 0 || emails.length === 0 || isSyncing
+                  }
                   className={currentPage === 0 || isSyncing ? "opacity-50" : ""}
                 >
                   <CircleArrowLeft />
@@ -278,16 +300,18 @@ export default function Inbox() {
                 <button
                   onClick={handleNextPage}
                   disabled={emails.length === 0 || isSyncing}
-                  className={emails.length === 0 || isSyncing ? "opacity-50" : ""}
+                  className={
+                    emails.length === 0 || isSyncing ? "opacity-50" : ""
+                  }
                 >
                   <CircleArrowRight />
                 </button>
               </div>
             </div>
-            {
-              isSyncing ?
-              <LoadingSpinner /> :
-              <div className="w-full h-full overflow-scroll">
+            {isSyncing ? (
+              <LoadingSpinner />
+            ) : (
+              <div className="w-full h-full overflow-y-scroll overflow-x-hidden">
                 {filteredEmails.map((email) => (
                   <div
                     key={email.message_id}
@@ -297,12 +321,20 @@ export default function Inbox() {
                       {email.headers.from.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{email.headers.from}</p>
-                      <p className="text-sm font-medium truncate">{email.headers.subject}</p>
-                      <p className="text-sm text-muted-foreground truncate">{email.snippet}</p>
+                      <p className="font-semibold truncate">
+                        {email.headers.from}
+                      </p>
+                      <p className="text-sm font-medium truncate">
+                        {email.headers.subject}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {email.snippet}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">{formatDate(email.headers.date)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(email.headers.date)}
+                      </p>
                       <Badge variant="secondary" className="mt-1">
                         {email.category}
                       </Badge>
@@ -310,12 +342,11 @@ export default function Inbox() {
                   </div>
                 ))}
               </div>
-            }
+            )}
           </CardContent>
         </Card>
       </div>
       {/* {isSyncing && <LoadingSpinner />} */}
     </div>
-  )
+  );
 }
-

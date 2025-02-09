@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 import { motion } from "framer-motion";
-import { RefreshCw, Mail, Send, Inbox, CheckCircle } from 'lucide-react';
+import { RefreshCw, Mail, Send, Inbox, CheckCircle } from "lucide-react";
 
 export const LoadingSpinner = () => {
   const orbitVariants = {
@@ -9,9 +9,9 @@ export const LoadingSpinner = () => {
       transition: {
         duration: 8,
         repeat: Infinity,
-        ease: "linear"
-      }
-    }
+        ease: "linear",
+      },
+    },
   };
 
   const containerVariants = {
@@ -20,9 +20,9 @@ export const LoadingSpinner = () => {
       transition: {
         duration: 3,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
+        ease: "easeInOut",
+      },
+    },
   };
 
   const iconVariants = {
@@ -31,9 +31,9 @@ export const LoadingSpinner = () => {
       transition: {
         duration: 4,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
+        ease: "easeInOut",
+      },
+    },
   };
 
   return (
@@ -45,7 +45,7 @@ export const LoadingSpinner = () => {
     >
       <div className="flex flex-col items-center">
         <motion.div
-          className="bg-card p-12 rounded-xl shadow-2xl flex flex-col items-center relative overflow-hidden"
+          className="bg-card p-12 rounded-xl flex flex-col items-center relative overflow-hidden"
           initial={{ scale: 0.8 }}
           variants={containerVariants}
           animate="animate"
@@ -97,9 +97,9 @@ export const LoadingSpinner = () => {
                 key={index}
                 className="w-3 h-3 rounded-full bg-primary"
                 initial={{ scale: 0 }}
-                animate={{ 
+                animate={{
                   scale: [0, 1, 0],
-                  opacity: [0, 1, 0]
+                  opacity: [0, 1, 0],
                 }}
                 transition={{
                   duration: 1.5,
