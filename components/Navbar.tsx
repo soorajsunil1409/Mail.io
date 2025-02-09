@@ -31,6 +31,7 @@ const Navbar = () => {
     { title: "Dashboard", link: "/dashboard" },
     { title: "Inbox", link: "/inbox" },
     { title: "Enterprise", link: "/enterprise" },
+    { title: "Events", link: "/events" },
   ];
 
   return (
