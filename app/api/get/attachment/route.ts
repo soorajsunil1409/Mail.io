@@ -1,17 +1,4 @@
 import { google } from "googleapis";
-<<<<<<< HEAD
-import { oauth2Client } from "@/lib/auth";
-import { NextRequest } from "next/server";
-
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const message_id = searchParams.get("message_id");
-    const attachment_id = searchParams.get("attachment_id");
-
-    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-    const attachmentRes = gmail.users.messages.attachments.get({
-=======
 import { NextRequest } from "next/server";
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
@@ -43,14 +30,10 @@ export async function GET(request: NextRequest) {
       access_token: user.access_token,
     });
     const attachmentRes = await gmail.users.messages.attachments.get({
->>>>>>> f73d75c4754c28cd5975b1effa79da5d990dc3ed
       userId: "me",
       messageId: message_id,
       id: attachment_id,
     });
-<<<<<<< HEAD
-    console.log(attachmentRes);
-=======
     const base64Data = attachmentRes.data.data;
     const fileBuffer = Buffer.from(base64Data, "base64");
     const contentType =
@@ -61,7 +44,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.log("Error while fetching Attachment: ", error);
->>>>>>> f73d75c4754c28cd5975b1effa79da5d990dc3ed
     return Response.json({
       attachmentRes,
     });

@@ -1,5 +1,5 @@
-import { motion } from "framer-motion"
-import { Mail, CheckCircle } from "lucide-react"
+import { motion } from "framer-motion";
+import { Mail, CheckCircle } from "lucide-react";
 
 export const LoadingScreen = () => {
   return (
@@ -19,17 +19,29 @@ export const LoadingScreen = () => {
           className="relative w-48 h-32 mb-6"
           initial={{ rotateY: 0 }}
           animate={{ rotateY: 180 }}
-          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "easeInOut" }}
+          transition={{
+            duration: 1.5,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
         >
           <motion.div
             className="absolute inset-0 bg-primary rounded-lg"
-            style={{ transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
+            style={{
+              transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
+            }}
           >
             <Mail className="w-full h-full text-primary-foreground p-4" />
           </motion.div>
           <motion.div
             className="absolute inset-0 bg-secondary rounded-lg flex items-center justify-center"
-            style={{ transformStyle: "preserve-3d", backfaceVisibility: "hidden", rotateY: 180 }}
+            style={{
+              transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
+              rotateY: 180,
+            }}
           >
             <CheckCircle className="w-16 h-16 text-primary" />
           </motion.div>
@@ -60,6 +72,5 @@ export const LoadingScreen = () => {
         </motion.div>
       </motion.div>
     </motion.div>
-  )
-}
-
+  );
+};

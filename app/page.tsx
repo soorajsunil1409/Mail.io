@@ -23,11 +23,11 @@ const Home = () => {
         />
         <div className="flex flex-col justify-center -translate-y-10 h-full items-center text-center gap-5">
           <div className="text-[125px] font-semibold mt-14">
-            The AI Code Editor
+            The AI Mail Box
           </div>
           <div className={`text-2xl `}>
-            Built to make you extraordinarily productive, <br /> Cursor is the
-            best way to code with AI.
+            Built to make you extraordinarily productive, <br /> Mail.io is the
+            best way to manage mails and mark calendars
           </div>
           <button className="bg-contrast text-anti-contrast px-5 py-3 rounded-lg">
             Get Started
@@ -59,8 +59,8 @@ const Home = () => {
 
       <div className="flex flex-col text-left w-full gap-10">
         <div className="flex flex-col w-full h-full text-left ml-10">
-          <div className="text-[40px]">title</div>
-          <div>as,jhdgakjdfh gasdkfhj </div>
+          <div className="text-[40px]">Features</div>
+          <div>Things that sets up apart from a Standard Mail App</div>
         </div>
         <div className="flex w-full h-full gap-10">
           {cards.map((card, i) => (

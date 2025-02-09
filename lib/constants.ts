@@ -23,21 +23,36 @@ export const defaultCategories = [
 
 export const features = [
   {
-    title: "Something 1",
-    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+    title: "Smart Categorization",
+    subtitle:
+      "Automatically sorts your emails into Events, Achievements, Important, and General for a streamlined inbox.",
   },
   {
-    title: "Something 2",
-    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+    title: "Intelligent Parsing",
+    subtitle:
+      "Extracts key details from your emails, such as dates, subjects, and attachments, to help you manage tasks and schedule events.",
   },
   {
-    title: "Something 3",
-    subtitle: "asdjhfkgaskd fashjdfg aksjdhfg askdjfhgaskjdhfg askjdhfgas kdjf",
+    title: "Seamless Integration",
+    subtitle:
+      "Effortlessly integrate your inbox with your calendar and productivity tools, ensuring you never miss a critical update.",
   },
 ];
 
 export const cards = [
-  { title: "Test1", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
-  { title: "Test2", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
-  { title: "Test3", subtitle: "SDfsjhdfgsdjfgsdf sjdfhg" },
+  {
+    title: "Effortless Email Management",
+    subtitle:
+      "Let our AI automatically sort and prioritize your emails so you can focus on what matters most.",
+  },
+  {
+    title: "Integrated Calendar Events",
+    subtitle:
+      "Convert event emails into calendar events with a single click, keeping your schedule organized and up-to-date.",
+  },
+  {
+    title: "Actionable Insights",
+    subtitle:
+      "Gain valuable insights and analytics on your email communications to optimize your daily workflow.",
+  },
 ];
