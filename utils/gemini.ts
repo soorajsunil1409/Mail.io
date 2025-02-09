@@ -1,15 +1,40 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleAIFileManager } from "@google/generative-ai/server";
 
-export async function askGemini(prompt: string) {
+export async function askGemini(
+  prompt: string,
+  filename?: string,
+  mimeType?: string,
+  path?: string
+) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const result = await model.generateContent(prompt);
+  let result;
+  if (filename && mimeType && path) {
+    const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY!);
+    const uploadResult = await fileManager.uploadFile(`${path}`, {
+      mimeType,
+      displayName: filename,
+    });
+    result = await model.generateContent([
+      prompt,
+      {
+        fileData: {
+          fileUri: uploadResult.file.uri,
+          mimeType: uploadResult.file.mimeType,
+        },
+      },
+    ]);
+  } else {
+    result = await model.generateContent(prompt);
+  }
+  // console.log(result.response.text());
   const jsonMatch = result.response.text().match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     const jsonString = jsonMatch[0];
     try {
       const parsedJson = JSON.parse(jsonString);
-      return parsedJson.type;
+      return parsedJson;
     } catch (err) {
       console.error("Failed to parse JSON:", err);
     }
@@ -19,7 +44,7 @@ export async function askGemini(prompt: string) {
   }
 }
 
-export const getPrompt = (parsedData, userCategories) => {
+export const getEmailClassifyPrompt = (parsedData, userCategories) => {
   const categoriesText = userCategories
     .map((category) => {
       const desc =
@@ -53,3 +78,42 @@ ${
 Analyze the above email data and return only the JSON object with the chosen category.
   `;
 };
+
+export const getEventSummaryPrompt = (parsedData) => {
+  return `
+You are an expert Event Detail Extractor. Your task is to analyze the following email data (provided as parsed JSON) and extract all relevant event details if the email describes an event. Please extract and output exactly the following fields in the specified JSON format:
+
+{
+  "summary": "Event summary",
+  "location": "Event location",
+  "description": "Event description",
+  "start": {
+    "dateTime": "YYYY-MM-DDTHH:MM:SS-XX:XX",
+    "timeZone": "TimeZone"
+  },
+  "end": {
+    "dateTime": "YYYY-MM-DDTHH:MM:SS-XX:XX",
+    "timeZone": "TimeZone"
+  },
+  "reminders": {
+    "useDefault": false,
+    "overrides": [
+      {"method": "email", "minutes": 1440},
+      {"method": "popup", "minutes": 10}
+    ]
+  }
+}
+
+If a particular field cannot be determined from the email, set its value to an empty string (for text fields) or false (for booleans) as appropriate.
+
+Below is the parsed email data:
+
+${typeof parsedData === "object" ? JSON.stringify(parsedData, null, 2) : parsedData}
+
+Return only the JSON object with no additional text.
+  `;
+};
+
+// Make sure to include these imports:
+// import { GoogleAIFileManager } from "@google/generative-ai/server";
+// import { GoogleGenerativeAI } from "@google/generative-ai";

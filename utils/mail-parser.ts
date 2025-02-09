@@ -1,3 +1,55 @@
+import { oauth2Client } from "@/lib/auth";
+import { google } from "googleapis";
+
+interface FilteredEmail {
+  snippet: string;
+  headers: {
+    recieved: [string];
+    date: string;
+    subject: string;
+    from: string;
+    to: string;
+  };
+  body: string;
+  attachments: { filname: string; attachmentId: string }[];
+}
+
+export async function getParsedEmail(
+  messageId: string
+): Promise<FilteredEmail> {
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  try {
+    const res = await gmail.users.messages.get({
+      userId: "me",
+      id: messageId,
+      format: "full",
+      fields:
+        "snippet,payload(headers(name,value),mimeType,body(attachmentId,data),parts(partId, mimeType, filename, body(attachmentId,data)))",
+    });
+
+    const messageData = res.data;
+    const snippet = messageData.snippet || "";
+
+    //Get Headers
+    const headersArray =
+      (messageData.payload && messageData.payload.headers) || [];
+    const filteredHeaders = extractDesiredHeaders(headersArray);
+
+    // Get Body and Attachments
+    const { bodyText, attachments } = await processPayload(messageData.payload);
+    const filteredEmail = {
+      snippet,
+      headers: filteredHeaders,
+      body: bodyText,
+      attachments,
+    };
+    return filteredEmail;
+  } catch (error) {
+    console.log("Error while parsing Email:", error);
+    return error;
+  }
+}
+
 export function extractDesiredHeaders(headersArray) {
   const desired = ["received", "from", "date", "subject", "to", "mailing-list"];
   const result = {};

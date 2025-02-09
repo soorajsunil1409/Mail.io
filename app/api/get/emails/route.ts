@@ -1,12 +1,11 @@
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
-import { google } from "googleapis";
 import { NextRequest } from "next/server";
-import { askGemini, getPrompt } from "@/utils/gemini";
-import { extractDesiredHeaders, processPayload } from "@/utils/mail-parser";
+import { askGemini, getEmailClassifyPrompt } from "@/utils/gemini";
+import { getParsedEmail } from "@/utils/mail-parser";
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -28,6 +27,7 @@ export async function GET(request: NextRequest) {
     url.searchParams.append("pageToken", next_page_token);
   }
   url.searchParams.append("maxResults", "15");
+  url.searchParams.append("q", "in:inbox -in:sent");
   oauth2Client.setCredentials({
     access_token: user.access_token,
   });
@@ -44,13 +44,17 @@ export async function GET(request: NextRequest) {
     const foundMessage = user.messages.find((msg) => msg.id === message.id);
     let category = foundMessage?.category;
     if (!foundMessage) {
-      const prompt = getPrompt(JSON.stringify(parsedEmail), user.categories);
+      const prompt = getEmailClassifyPrompt(
+        JSON.stringify(parsedEmail),
+        user.categories
+      );
       const response = await askGemini(prompt);
       user.messages.push({
         id: message.id,
-        category: response,
+        category: response.type,
+        marked: false,
       });
-      category = response;
+      category = response.type;
       await delay(4000);
     }
     classifiedEmails.push({
@@ -66,38 +70,4 @@ export async function GET(request: NextRequest) {
     next_page_token: data.nextPageToken,
     messages: classifiedEmails,
   });
-}
-
-async function getParsedEmail(messageId: string) {
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-  try {
-    const res = await gmail.users.messages.get({
-      userId: "me",
-      id: messageId,
-      format: "full",
-      fields:
-        "snippet,payload(headers(name,value),mimeType,body(attachmentId,data),parts(partId, mimeType, filename, body(attachmentId,data)))",
-    });
-
-    const messageData = res.data;
-    const snippet = messageData.snippet || "";
-
-    //Get Headers
-    const headersArray =
-      (messageData.payload && messageData.payload.headers) || [];
-    const filteredHeaders = extractDesiredHeaders(headersArray);
-
-    // Get Body and Attachments
-    const { bodyText, attachments } = await processPayload(messageData.payload);
-    const filteredEmail = {
-      snippet,
-      headers: filteredHeaders,
-      body: bodyText,
-      attachments,
-    };
-    return filteredEmail;
-  } catch (error) {
-    console.log("Error while parsing Email:", error);
-    return error;
-  }
 }
