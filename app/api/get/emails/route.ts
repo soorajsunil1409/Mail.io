@@ -10,7 +10,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const user_id = searchParams.get("user_id");
-  const next_page_token = searchParams.get("next_page_token");
+  const page_token = searchParams.get("page_token");
 
   await connect_DB();
   const user = await User.findOne<IUser>({ google_id: user_id });
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
   await refresh_access_token(user);
   const baseUrl = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
   const url = new URL(baseUrl);
-  if (next_page_token) {
-    url.searchParams.append("pageToken", next_page_token);
+  if (page_token) {
+    url.searchParams.append("pageToken", page_token);
   }
   url.searchParams.append("maxResults", "15");
   url.searchParams.append("q", "in:inbox -in:sent");
