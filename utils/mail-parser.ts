@@ -40,17 +40,12 @@ export async function getParsedEmail(
     const { bodyText, attachments, bodyHTML } = await processPayload(
       messageData.payload
     );
-    const { bodyText, attachments, bodyHTML } = await processPayload(
-      messageData.payload
-    );
     const filteredEmail = {
       snippet,
       headers: filteredHeaders,
       body: bodyText,
       attachments,
       bodyHTML,
-      bodyHTML,
-      res,
     };
     return filteredEmail;
   } catch (error) {
@@ -81,7 +76,6 @@ export function extractDesiredHeaders(headersArray) {
 export async function processPayload(payload) {
   let bodyText = "";
   let bodyHTML = "";
-  let bodyHTML = "";
   let attachments = [];
 
   if (payload.parts && payload.parts.length) {
@@ -90,17 +84,11 @@ export async function processPayload(payload) {
         const nested = await processPayload(part);
         bodyText += nested.bodyText;
         bodyHTML += nested.bodyHTML;
-        bodyHTML += nested.bodyHTML;
         attachments = attachments.concat(nested.attachments);
       } else if (part.mimeType === "text/plain") {
         if (part.body && part.body.data) {
           const text = Buffer.from(part.body.data, "base64").toString("utf8");
           bodyText += text + "\n";
-        }
-      } else if (part.mimeType === "text/html") {
-        if (part.body && part.body.data) {
-          const html = Buffer.from(part.body.data, "base64").toString("utf8");
-          bodyHTML += html;
         }
       } else if (part.mimeType === "text/html") {
         if (part.body && part.body.data) {
@@ -129,14 +117,7 @@ export async function processPayload(payload) {
       payload.body.data
     ) {
       bodyHTML = Buffer.from(payload.body.data, "base64").toString("utf8");
-    } else if (
-      payload.mimeType === "text/html" &&
-      payload.body &&
-      payload.body.data
-    ) {
-      bodyHTML = Buffer.from(payload.body.data, "base64").toString("utf8");
     }
   }
-  return { bodyText, attachments, bodyHTML };
   return { bodyText, attachments, bodyHTML };
 }
