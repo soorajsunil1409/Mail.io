@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { Mail, MailOpen, Star, Trash, Send, Archive, Search, RefreshCw } from "lucide-react"
+import { Mail, MailOpen, Star, Trash, Send, Archive, Search, RefreshCw, Trash2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,8 +12,10 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDate } from "@/utils/formatDate"
 import { toast } from "@/hooks/use-toast"
+import NewCategoryModal from "@/components/NewCategoryModal"
+import { IntegerType } from "mongodb"
 
-interface Email {
+interface IEmail {
   snippet: string
   headers: {
     from: string
@@ -24,22 +26,27 @@ interface Email {
   message_id: string
 }
 
-const categories = [
-  { name: "All", icon: Mail },
-  { name: "Important", icon: Star },
-  { name: "Unread", icon: MailOpen },
-  { name: "Sent", icon: Send },
-  { name: "Trash", icon: Trash },
-  { name: "Archived", icon: Archive },
-]
+interface ICategory {
+  name: string,
+  description: string
+}
 
 export default function Inbox() {
   const { theme } = useTheme()
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchTerm, setSearchTerm] = useState("")
-  const [emails, setEmails] = useState<Email[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
   const { data: session, status } = useSession()
+
+  const [emails, setEmails] = useState<IEmail[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [prevPageToken, setPrevPageToken] = useState<string>("");
+  const [nextPageToken, setNextPageToken] = useState<string>("");
+  const [currentPageToken, setCurrentPageToken] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<IntegerType>(1);
+
+  const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return
@@ -56,7 +63,8 @@ export default function Inbox() {
 
       const data = await res.json()
       setEmails(data.messages)
-      console.log(data.messages);
+      setNextPageToken(data.next_page_token);
+      console.log(data.next_page_token);
       toast({
         title: "Emails synced successfully",
         description: `${data.messages.length} emails retrieved.`,
@@ -71,7 +79,104 @@ export default function Inbox() {
     } finally {
       setIsSyncing(false)
     }
+  };
+
+  const handleAddCategory = async (newCategory: {name: string, description: string}) => {
+    if (status !== "authenticated" || !session?.user?.id) return
+
+    console.log(newCategory);
+
+    try {
+      const res = await fetch(`/api/category/update`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: session?.user?.id,
+          categories: [...categories, newCategory]
+        })
+      });
+
+      if (!res.ok) {
+        console.log("Update Categories Failed");
+      }
+
+      setCategories([...categories, newCategory]);
+      setIsCategoryModalOpen(false);
+
+    } catch (error) {
+      console.log("Error updating Categories");
+    }
   }
+
+  const handleRemoveCategory = async (name: string) => {
+    const isConfirmed = window.confirm(`Are you sure you want to delete "${name}"?`);
+    
+    if (!isConfirmed) return;
+
+    const newCategories = categories.filter((category) => category.name !== name);
+
+    console.log(newCategories);
+    
+    try {
+      const res = await fetch(`/api/category/update`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: session?.user?.id,
+          categories: newCategories
+        })
+      });
+
+      if (!res.ok) {
+        console.log("Delete Categories Failed");
+      }
+
+      setCategories(newCategories);
+    } catch (error) {
+        console.log("Error deleting Categories");
+      }
+  }
+
+  const handlePrevPage = async () => {
+    
+  }
+
+  const handleNextPage = async () => {
+    
+  }
+
+  useEffect(() => {
+    const getCategories = async () => {
+      if (status !== "authenticated" || !session?.user?.id) return
+      
+      try {
+        const res = await fetch(`/api/category/get?user_id=${session?.user?.id}`, {
+          method: "GET"
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+
+        const data = await res.json();
+
+        if (data) {
+          setCategories([...data.categories]);
+          console.log(data.categories);
+        }
+
+      } catch (error) {
+        console.log("Error getting categories");
+      }
+    };
+
+    getCategories();
+  }, [session, status])
+
 
 //   useEffect(() => {
 //     if (status === "authenticated" && session?.user?.id) {
@@ -117,11 +222,10 @@ export default function Inbox() {
     // ]
 
   return (
-    <div className="px-8 w-full min-h-screen flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
+    <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
       <div className="w-full pt-10 flex justify-between items-center">
         <div>
           <h1 className="text-4xl font-semibold mb-2">Email Inbox</h1>
-          <p className="text-xl text-muted-foreground">Welcome back! Here&apos;s your email overview.</p>
         </div>
         <Button
           onClick={getEmails}
@@ -134,28 +238,48 @@ export default function Inbox() {
       </div>
 
       <div className="w-full flex gap-8">
-        <Card className="w-64 h-[calc(100vh-200px)]">
+        <Card className="w-64 h-[calc(94vh-200px)]">
           <CardContent className="p-4">
             <Button className="w-full mb-4" variant="default">
               Compose
             </Button>
             <ScrollArea className="h-[calc(100%-60px)]">
+              <button
+                className="w-full justify-start mb-2 relative group flex items-center p-3 hover:bg-secondary rounded-md text-sm"
+                onClick={() => setSelectedCategory("All")}
+              >
+                All
+              </button>
               {categories.map((category, index) => (
-                <Button
-                  key={index}
-                  variant={selectedCategory === category.name ? "secondary" : "ghost"}
-                  className="w-full justify-start mb-2"
-                  onClick={() => setSelectedCategory(category.name)}
-                >
-                  <category.icon className="mr-2 h-4 w-4" />
-                  {category.name}
-                </Button>
+                <button
+                key={index}
+                className="w-full justify-start mb-2 relative group flex items-center p-3 hover:bg-secondary rounded-md text-sm"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => setSelectedCategory(category.name)}
+              >
+                {category.name}
+
+                {hoveredIndex === index && (
+                  <Trash2
+                    className="absolute right-2 top-2 text-gray-500 translate-y-1 hover:text-red-500 cursor-pointer transition-all"
+                    size={20}
+                    onClick={() => handleRemoveCategory(category.name)}
+                  />
+                )}
+              </button>
               ))}
+              <Button onClick={() => setIsCategoryModalOpen((prev) => !prev)} className="w-full justify-start mb-2 bg-background border-dashed border-2 border-contrast/60 text-contrast hover:bg-secondary">Add Category</Button>
+
+              {
+                isNewCategoryModalOpen &&
+                <NewCategoryModal handleAddCategory={handleAddCategory} />
+              }
             </ScrollArea>
           </CardContent>
         </Card>
 
-        <Card className="flex h-[calc(100vh-200px)] w-full overflow-scroll">
+        <Card className="flex flex-col h-[calc(94vh-200px)] w-full overflow-scroll">
           <CardContent className="p-4 w-full">
             <div className="flex items-center space-x-2 mb-4 w-full">
               <Search className="w-5 h-5 text-muted-foreground" />
@@ -191,27 +315,6 @@ export default function Inbox() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex text-left w-full gap-10 h-[40vh] mt-20">
-        <div className="flex flex-col h-full w-full items-start gap-4">
-          <div className="text-5xl md:text-7xl font-semibold">Manage Your Inbox</div>
-          <p className="text-xl text-muted-foreground mb-4">
-            Stay organized and boost your productivity with our email client
-          </p>
-          <Button size="lg" className="text-xl">
-            Get Started
-          </Button>
-        </div>
-        <div className="">
-          <Image
-            src="/logo.svg"
-            className={`inset-0 ${theme === "dark" ? "invert-0" : "invert"} -z-10 w-full h-full -translate-y-20`}
-            alt="Logo"
-            width={100}
-            height={100}
-          />
-        </div>
       </div>
     </div>
   )

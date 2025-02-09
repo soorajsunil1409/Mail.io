@@ -26,6 +26,10 @@ export async function POST(request: Request) {
     if (user.categories.length == 0) {
       user.categories.push({ name: "General", description: "All the Emails" });
     }
+
+    // Clear user messages after every update
+    user.messages = [];
+
     await user.save();
     return Response.json({
       success: true,
