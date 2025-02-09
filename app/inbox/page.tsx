@@ -13,6 +13,7 @@ import { formatDate } from "@/utils/formatDate"
 import { toast } from "@/hooks/use-toast"
 import NewCategoryModal from "@/components/NewCategoryModal"
 import { LoadingSpinner } from "@/components/LoadingSpinner"
+import SyncPrompt from "@/components/EmptyEmails"
 
 interface IEmail {
   snippet: string
@@ -43,7 +44,7 @@ export default function Inbox() {
   const [pageTokenArray, setPageTokenArray] = useState<string[]>([""])
 
   const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false)
-  const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [hoveredIndex, setHoveredIndex] = useState<null | number>(null)
 
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return
@@ -285,31 +286,37 @@ export default function Inbox() {
               </div>
             </div>
             {
-              isSyncing ?
-              <LoadingSpinner /> :
-              <div className="w-full h-full overflow-scroll">
-                {filteredEmails.map((email) => (
-                  <div
-                    key={email.message_id}
-                    className="flex items-center space-x-4 p-4 hover:bg-muted w-full rounded-lg cursor-pointer"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-                      {email.headers.from.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{email.headers.from}</p>
-                      <p className="text-sm font-medium truncate">{email.headers.subject}</p>
-                      <p className="text-sm text-muted-foreground truncate">{email.snippet}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">{formatDate(email.headers.date)}</p>
-                      <Badge variant="secondary" className="mt-1">
-                        {email.category}
-                      </Badge>
-                    </div>
+              emails.length === 0 && isSyncing === false ?
+              <SyncPrompt /> :
+              <>
+                {
+                  isSyncing ?
+                  <LoadingSpinner /> :
+                  <div className="w-full h-full overflow-scroll">
+                    {filteredEmails.map((email) => (
+                      <div
+                        key={email.message_id}
+                        className="flex items-center space-x-4 p-4 hover:bg-muted w-full rounded-lg cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+                          {email.headers.from.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{email.headers.from}</p>
+                          <p className="text-sm font-medium truncate">{email.headers.subject}</p>
+                          <p className="text-sm text-muted-foreground truncate">{email.snippet}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">{formatDate(email.headers.date)}</p>
+                          <Badge variant="secondary" className="mt-1">
+                            {email.category}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                }
+              </>
             }
           </CardContent>
         </Card>
