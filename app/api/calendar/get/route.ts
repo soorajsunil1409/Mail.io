@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
           location: item.location || "",
           start_time: item.start?.dateTime,
           end_time: item.end?.dateTime,
+          id: item.id,
         });
       }
     }

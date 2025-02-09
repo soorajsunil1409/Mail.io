@@ -11,6 +11,7 @@ interface FilteredEmail {
     to: string;
   };
   body: string;
+  bodyHTML: string;
   attachments: { filname: string; attachmentId: string }[];
 }
 
@@ -36,12 +37,16 @@ export async function getParsedEmail(
     const filteredHeaders = extractDesiredHeaders(headersArray);
 
     // Get Body and Attachments
-    const { bodyText, attachments } = await processPayload(messageData.payload);
+    const { bodyText, attachments, bodyHTML } = await processPayload(
+      messageData.payload
+    );
     const filteredEmail = {
       snippet,
       headers: filteredHeaders,
       body: bodyText,
       attachments,
+      bodyHTML,
+      res,
     };
     return filteredEmail;
   } catch (error) {
@@ -71,6 +76,7 @@ export function extractDesiredHeaders(headersArray) {
 
 export async function processPayload(payload) {
   let bodyText = "";
+  let bodyHTML = "";
   let attachments = [];
 
   if (payload.parts && payload.parts.length) {
@@ -78,11 +84,17 @@ export async function processPayload(payload) {
       if (part.mimeType && part.mimeType.startsWith("multipart/")) {
         const nested = await processPayload(part);
         bodyText += nested.bodyText;
+        bodyHTML += nested.bodyHTML;
         attachments = attachments.concat(nested.attachments);
       } else if (part.mimeType === "text/plain") {
         if (part.body && part.body.data) {
           const text = Buffer.from(part.body.data, "base64").toString("utf8");
           bodyText += text + "\n";
+        }
+      } else if (part.mimeType === "text/html") {
+        if (part.body && part.body.data) {
+          const html = Buffer.from(part.body.data, "base64").toString("utf8");
+          bodyHTML += html;
         }
       } else {
         if (part.body && part.body.attachmentId) {
@@ -100,7 +112,13 @@ export async function processPayload(payload) {
       payload.body.data
     ) {
       bodyText = Buffer.from(payload.body.data, "base64").toString("utf8");
+    } else if (
+      payload.mimeType === "text/html" &&
+      payload.body &&
+      payload.body.data
+    ) {
+      bodyHTML = Buffer.from(payload.body.data, "base64").toString("utf8");
     }
   }
-  return { bodyText, attachments };
+  return { bodyText, attachments, bodyHTML };
 }
