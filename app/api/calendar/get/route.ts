@@ -1,10 +1,17 @@
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
+import { requireAuthNoNext } from "@/lib/authRequired";
 import { IUser, User } from "@/models/User";
 import { connect_DB } from "@/utils/DB";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuthNoNext(request);
+  const authRes = await authResult.json();
+  if (!authRes.success) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const searchUrlParams = request.nextUrl.searchParams;
   const start_time = searchUrlParams.get("start_time");
   const end_time = searchUrlParams.get("end_time");
