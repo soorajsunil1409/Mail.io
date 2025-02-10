@@ -1,21 +1,27 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { Search, RefreshCw, Trash2, CircleArrowLeft, CircleArrowRight } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatDate } from "@/utils/formatDate"
-import { toast } from "@/hooks/use-toast"
-import NewCategoryModal from "@/components/NewCategoryModal"
-import { LoadingSpinner } from "@/components/LoadingSpinner"
-import SyncPrompt from "@/components/EmptyEmails"
-import { IEmail, ICategory } from "@/lib/types"
-import EmailView from "@/components/EmailView"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import {
+  Search,
+  RefreshCw,
+  Trash2,
+  CircleArrowLeft,
+  CircleArrowRight,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatDate } from "@/utils/formatDate";
+import { toast } from "@/hooks/use-toast";
+import NewCategoryModal from "@/components/NewCategoryModal";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import SyncPrompt from "@/components/EmptyEmails";
+import { IEmail, ICategory } from "@/lib/types";
+import EmailView from "@/components/EmailView";
 
 export default function Inbox() {
   const { theme } = useTheme();
@@ -31,32 +37,34 @@ export default function Inbox() {
   const [isMailSelected, setIsMailSelected] = useState<boolean>(false);
   const [selectedMail, setSelectedMail] = useState<IEmail>({});
 
-  const [isNewCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false)
-  const [hoveredIndex, setHoveredIndex] = useState<null | number>(null)
+  const [isNewCategoryModalOpen, setIsCategoryModalOpen] =
+    useState<boolean>(false);
+  const [hoveredIndex, setHoveredIndex] = useState<null | number>(null);
 
   const [hoveredEmailId, setHoveredEmailId] = useState<string | null>(null);
   const [isAddingToCalendar, setIsAddingToCalendar] = useState<boolean>(false);
-  
+
   const handleAddToCalendar = async (email: IEmail) => {
     console.log("Adding to calendar:", email);
 
     setIsAddingToCalendar(true);
     try {
-      const res = await fetch(`/api/calendar/add?user_id=${session?.user.id}&message_id=${email.message_id}`, {
-        method: "GET"
-      })
-      
+      const res = await fetch(
+        `/api/calendar/add?user_id=${session?.user.id}&message_id=${email.message_id}`,
+        {
+          method: "GET",
+        }
+      );
+
       if (!res.ok) {
         console.log("Error fetching");
       }
-      
     } catch (error) {
       console.log("Error adding to calendar");
     } finally {
       setIsAddingToCalendar(false);
     }
   };
-  
 
   const getEmails = async () => {
     if (status !== "authenticated" || !session?.user?.id) return;
@@ -223,15 +231,20 @@ export default function Inbox() {
   );
 
   const handleMailPopup = async (email: IEmail) => {
-    setSelectedMail(email); 
+    setSelectedMail(email);
     setIsMailSelected(true);
 
     for (const attachment of email.attachments) {
-      const res = await fetch(`/api/get/attachment?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}`, {
-        method: "GET"
-      });
+      const res = await fetch(
+        `/api/get/attachment?user_id=${session?.user.id}&message_id=${email.message_id}&attachment_id=${attachment.attachmentId}`,
+        {
+          method: "GET",
+        }
+      );
 
-      const { fileBuffer: { data } } = await res.json();
+      const {
+        fileBuffer: { data },
+      } = await res.json();
 
       // const tempDir = path.join(process.cwd(), "temp");
       // if (!fs.existsSync(tempDir)) {
@@ -239,10 +252,10 @@ export default function Inbox() {
       // }
       // const localFilePath = path.join(tempDir, attachment.filename);
       // fs.writeFileSync(localFilePath, data)
-      
+
       console.log(data);
     }
-  }
+  };
 
   return (
     <div className="px-8 w-full h-[88vh] flex flex-col gap-10 items-center pb-10 bg-gradient-to-br from-background to-secondary">
@@ -337,13 +350,13 @@ export default function Inbox() {
                 </button>
               </div>
             </div>
-            {
-              emails.length === 0 && isSyncing === false ?
-              <SyncPrompt /> :
+            {emails.length === 0 && isSyncing === false ? (
+              <SyncPrompt />
+            ) : (
               <>
-                {
-                  isSyncing ?
-                  <LoadingSpinner /> :
+                {isSyncing ? (
+                  <LoadingSpinner />
+                ) : (
                   <div className="w-full h-full overflow-scroll">
                     {filteredEmails.map((email) => (
                       <div
@@ -357,37 +370,52 @@ export default function Inbox() {
                           {email.headers.from.charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{email.headers.from}</p>
-                          <p className="text-sm font-medium truncate">{email.headers.subject}</p>
-                          <p className="text-sm text-muted-foreground truncate">{email.snippet}</p>
+                          <p className="font-semibold truncate">
+                            {email.headers.from}
+                          </p>
+                          <p className="text-sm font-medium truncate">
+                            {email.headers.subject}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {email.snippet}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">{formatDate(email.headers.date)}</p>
-                          <Badge variant="secondary" className="mt-1">{email.category}</Badge>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(email.headers.date)}
+                          </p>
+                          <Badge variant="secondary" className="mt-1">
+                            {email.category}
+                          </Badge>
                         </div>
 
-                        {email.category === "Events" && hoveredEmailId === email.message_id && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCalendar(email);
-                            }}
-                            disabled={isAddingToCalendar === true}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-contrast text-anti-contrast font-bold px-3 py-3 rounded-md text-md shadow-md hover:bg-contrast-secondary transition-all"
-                          >
-                            {isAddingToCalendar ? "Adding to Calendar..." : "Add to Calendar"}
-                          </button>
-                        )}
+                        {email.category === "Events" &&
+                          hoveredEmailId === email.message_id && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCalendar(email);
+                              }}
+                              disabled={isAddingToCalendar === true}
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-contrast text-anti-contrast font-bold px-3 py-3 rounded-md text-md shadow-md hover:bg-contrast-secondary transition-all"
+                            >
+                              {isAddingToCalendar
+                                ? "Adding to Calendar..."
+                                : "Add to Calendar"}
+                            </button>
+                          )}
                       </div>
                     ))}
                   </div>
-                }
+                )}
               </>
-            }
+            )}
           </CardContent>
         </Card>
       </div>
-      {isMailSelected && <EmailView email={selectedMail} setIsMailSelected={setIsMailSelected} />}
+      {isMailSelected && (
+        <EmailView email={selectedMail} setIsMailSelected={setIsMailSelected} />
+      )}
     </div>
   );
 }
