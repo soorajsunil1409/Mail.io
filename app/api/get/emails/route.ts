@@ -4,10 +4,17 @@ import { IUser, User } from "@/models/User";
 import { NextRequest } from "next/server";
 import { askGemini, getEmailClassifyPrompt } from "@/utils/gemini";
 import { getParsedEmail } from "@/utils/mail-parser";
+import { requireAuth, requireAuthNoNext } from "@/lib/authRequired";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuthNoNext(request);
+  const authRes = await authResult.json();
+  if (!authRes.success) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const user_id = searchParams.get("user_id");
   const page_token = searchParams.get("page_token");

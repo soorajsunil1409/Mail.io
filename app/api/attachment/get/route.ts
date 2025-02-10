@@ -3,8 +3,15 @@ import { NextRequest } from "next/server";
 import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
+import { requireAuthNoNext } from "@/lib/authRequired";
 
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuthNoNext(request);
+  const authRes = await authResult.json();
+  if (!authRes.success) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   try {
     const searchUrlParams = request.nextUrl.searchParams;
     const user_id = searchUrlParams.get("user_id");

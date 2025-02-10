@@ -10,8 +10,15 @@ import { connect_DB } from "@/utils/DB";
 import { askGemini, getEventSummaryPrompt } from "@/utils/gemini";
 import { getParsedEmail } from "@/utils/mail-parser";
 import { NextRequest } from "next/server";
+import { requireAuthNoNext } from "@/lib/authRequired";
 
 export async function GET(request: NextRequest) {
+  const authResult = await requireAuthNoNext(request);
+  const authRes = await authResult.json();
+  if (!authRes.success) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   try {
     const searchUrlParams = request.nextUrl.searchParams;
     const user_id = searchUrlParams.get("user_id");
