@@ -4,6 +4,8 @@ import { oauth2Client, refresh_access_token } from "@/lib/auth";
 import { connect_DB } from "@/utils/DB";
 import { IUser, User } from "@/models/User";
 import { requireAuthNoNext } from "@/lib/authRequired";
+import path from "path";
+import fs from "fs";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAuthNoNext(request);
@@ -17,6 +19,7 @@ export async function GET(request: NextRequest) {
     const user_id = searchUrlParams.get("user_id");
     const message_id = searchUrlParams.get("message_id");
     const attachment_id = searchUrlParams.get("attachment_id");
+    const filename = searchUrlParams.get("filename");
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
     await connect_DB();
@@ -43,16 +46,22 @@ export async function GET(request: NextRequest) {
     });
     const base64Data = attachmentRes.data.data;
     const fileBuffer = Buffer.from(base64Data, "base64");
-    const contentType =
-      attachmentRes.headers["content-type"] || "application/octet-stream";
+    const tempDir = path.join(process.cwd(), "temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+    const localFilePath = path.join(tempDir, filename);
+    fs.writeFileSync(localFilePath, fileBuffer);
     return Response.json({
-      fileBuffer,
-      contentType,
+      success: true,
+      message: `Attachment Saved in path : ${localFilePath}`,
+      filePath: localFilePath,
     });
   } catch (error) {
     console.log("Error while fetching Attachment: ", error);
     return Response.json({
-      attachmentRes,
+      success: false,
+      message: "Error while fetching and Creating Attachement",
     });
   }
 }
